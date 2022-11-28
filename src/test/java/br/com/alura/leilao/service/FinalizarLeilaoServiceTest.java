@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import br.com.alura.leilao.dao.LeilaoDao;
@@ -31,7 +33,27 @@ class FinalizarLeilaoServiceTest {
 	void deveriaFinalizarUmLeilao() {
 		List<Leilao> leiloes = leiloes();
 		
+		// com o Mockito.when eu manipulo um determinado comportamento de um Mock
+		Mockito.when(leilaoDao.buscarLeiloesExpirados()).thenReturn(leiloes);
 		service.finalizarLeiloesExpirados();
+		
+		// Verificações
+		// 1) Vamos verificar se o leilão foi realmente fechado, assim se alguém apagar a linha, ele acusa aqui
+		Leilao leilao = leiloes.get(0);
+		Assert.assertTrue(leilao.isFechado());
+		
+		// 2) Também temos que ser se o lance vencedor é o de R$900
+		Assert.assertEquals(new BigDecimal("900"), leilao.getLanceVencedor().getValor());
+		
+		/*
+		 *  3) Temos o método "leiloes.salvar(leilao)" na classe a ser testada. Podemos ver
+		 *  se o compilador está passando nesse teste para ver se está salvando na base de dados.
+		 *  Então eu vou fazer uma assertiva dentro do que nós mockamos. O mockito também já tem
+		 *  um esquema pronto para você verificar se um determinado método de um mock foi executado,
+		 *  assim caso alguém algum dia apague a linha que contenha esse método o teste aqui irá acusar.
+		 */
+		Mockito.verify(leilaoDao).salvar(leilao);
+		
 	}
 	
 	private List<Leilao> leiloes() {
