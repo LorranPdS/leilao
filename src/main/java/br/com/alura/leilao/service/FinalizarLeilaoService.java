@@ -12,9 +12,20 @@ import br.com.alura.leilao.model.Leilao;
 @Service
 public class FinalizarLeilaoService {
 
-	@Autowired
+//	@Autowired 
+//	private LeilaoDao leiloes;
+	/*
+	 * IMPORTANTE: leia a documentação da aula para entender o motivo de não ser interessante
+	 * injetar a dependência direto pelo atributo (como está acima) mas sim criando um construtor
+	 * para ele
+	 */
 	private LeilaoDao leiloes;
-
+	
+	@Autowired
+	public FinalizarLeilaoService(LeilaoDao leiloes) {
+		this.leiloes = leiloes;
+	}
+	
 	public void finalizarLeiloesExpirados() {
 		List<Leilao> expirados = leiloes.buscarLeiloesExpirados();
 		expirados.forEach(leilao -> {
