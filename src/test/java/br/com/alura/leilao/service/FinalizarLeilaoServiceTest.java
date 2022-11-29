@@ -23,10 +23,13 @@ class FinalizarLeilaoServiceTest {
 	@Mock
 	private LeilaoDao leilaoDao;
 	
+	@Mock
+	private EnviadorDeEmails enviadorDeEmails;
+	
 	@BeforeEach
 	public void beforeEach() {
 		MockitoAnnotations.initMocks(this);
-		this.service = new FinalizarLeilaoService(leilaoDao);
+		this.service = new FinalizarLeilaoService(leilaoDao, enviadorDeEmails);
 	}
 	
 	@Test
@@ -53,6 +56,19 @@ class FinalizarLeilaoServiceTest {
 		 *  assim caso alguém algum dia apague a linha que contenha esse método o teste aqui irá acusar.
 		 */
 		Mockito.verify(leilaoDao).salvar(leilao);
+		
+	}
+	
+	@Test
+	void deveriaEnviarEmailParaVencedorDoLeilao() {
+		List<Leilao> leiloes = leiloes();
+		Mockito.when(leilaoDao.buscarLeiloesExpirados()).thenReturn(leiloes);
+		service.finalizarLeiloesExpirados();
+		
+		// agora é que eu vou verificar se foi enviado um email para o maior lance
+		Leilao leilao = leiloes.get(0);
+		Lance lanceVencedor = leilao.getLanceVencedor();
+		Mockito.verify(enviadorDeEmails).enviarEmailVencedorLeilao(lanceVencedor);
 		
 	}
 	
