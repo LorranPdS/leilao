@@ -56,7 +56,6 @@ class FinalizarLeilaoServiceTest {
 		 *  assim caso alguém algum dia apague a linha que contenha esse método o teste aqui irá acusar.
 		 */
 		Mockito.verify(leilaoDao).salvar(leilao);
-		
 	}
 	
 	@Test
@@ -69,7 +68,34 @@ class FinalizarLeilaoServiceTest {
 		Leilao leilao = leiloes.get(0);
 		Lance lanceVencedor = leilao.getLanceVencedor();
 		Mockito.verify(enviadorDeEmails).enviarEmailVencedorLeilao(lanceVencedor);
+	}
+	
+	@Test
+	void naoDeveriaEnviarEmailParaVencedorDoLeilaoEmCasoDeErroAoEncerrarOLeilao() {
+		List<Leilao> leiloes = leiloes();
+		Mockito.when(leilaoDao.buscarLeiloesExpirados()).thenReturn(leiloes);
 		
+		/*
+		 * 2) Agora eu vou precisar forçar uma exceção na linha de salvar da classe que está 
+		 * implementando, mas eu não posso fazer isso na classe de produção, mas sim aqui usando 
+		 * o Mockito. Para tal, eu faço com que, em vez do método 'leilaoDao.salvar' passar normalmente,
+		 * eu peço para que me retorne uma exceção. Veja abaixo como ficou no Mockito.when(). 
+		 */
+		Mockito.when(leilaoDao.salvar(Mockito.any())).thenThrow(RuntimeException.class);
+		try {
+			service.finalizarLeiloesExpirados();
+			/*
+			 * 1) Vamos supor que na classe em que testamos, em vez de salvar na base de dados o banco
+			 * de dados está fora e estoura uma exceção. Se isso ocorrer, então precisa estourar 
+			 * uma exceção e o email não deverá ser enviado para o usuário, ou seja, a base estoura 
+			 * antes e não vai para a linha de envio de email.
+			 * Então, o que faremos é o seguinte: fazer um verify para ver se realmente o compilador 
+			 * não passou pela linha de envio de email, que é o que está abaixo.
+			 * 
+			 * Ele diz: mockito, verifica pra mim se não houve realmente interação com o mock 'enviadorDeEmails'
+			 */
+			Mockito.verifyNoInteractions(enviadorDeEmails);
+		} catch (Exception e) {}
 	}
 	
 	private List<Leilao> leiloes() {
