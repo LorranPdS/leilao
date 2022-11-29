@@ -1,5 +1,6 @@
 # Changelog
 
+class[04.03] -> Simulando o lançamento de uma exception e verificando se um método realmente não foi executado.
 class[04.02] -> Injetando mais uma dependência e testando envio de email. Uso novamente do Mockito.veriy().
 class[03.05] -> Manipulando métodos e aprendendo sobre a validação "verify".
 class[03.03] -> Create mock to class "LeilaoDao" from class "FinalizarLeilaoService".
