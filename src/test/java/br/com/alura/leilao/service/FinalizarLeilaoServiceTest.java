@@ -116,6 +116,5 @@ class FinalizarLeilaoServiceTest {
         lista.add(leilao);
 
         return lista;
-
-    } 
+    }
 }
