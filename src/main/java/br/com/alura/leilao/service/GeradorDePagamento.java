@@ -21,8 +21,9 @@ public class GeradorDePagamento {
 
 	public void gerarPagamento(Lance lanceVencedor) {
 		LocalDate vencimento = LocalDate.now().plusDays(1);
+		
+		// Na aula de @Captor, esse "Pagamento" que está sendo capturado na linha do ".salvar(pagamento)"
 		Pagamento pagamento = new Pagamento(lanceVencedor, vencimento);
 		this.pagamentos.salvar(pagamento);
 	}
-
 }
