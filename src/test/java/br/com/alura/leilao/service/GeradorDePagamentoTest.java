@@ -1,7 +1,10 @@
 package br.com.alura.leilao.service;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,17 +30,27 @@ class GeradorDePagamentoTest {
 	
 	@Captor
 	private ArgumentCaptor<Pagamento> captor;
+	
+	@Mock
+	private Clock clock;
 
 	@BeforeEach
 	public void beforeEach() {
 		MockitoAnnotations.initMocks(this);
-		this.gerador = new GeradorDePagamento(pagamentoDao);
+		this.gerador = new GeradorDePagamento(pagamentoDao, clock);
 	}
 
 	@Test
 	void deveriaCriarPagamentoParaVencedorDoLeilao() {
 		Leilao leilao = leilao();
 		Lance vencedor = leilao.getLanceVencedor();
+		
+		// aqui está no mesmo dia do teste, mas tem que fazer com valores dinâmicos
+		LocalDate data = LocalDate.of(2022, 12, 1);	
+		Instant instant = data.atStartOfDay(ZoneId.systemDefault()).toInstant();
+		
+		Mockito.when(clock.instant()).thenReturn(instant);
+		Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
 		gerador.gerarPagamento(vencedor);
 		
 		/*
@@ -53,7 +66,13 @@ class GeradorDePagamentoTest {
 		Pagamento pagamento = captor.getValue();
 		
 		// Então o pagamento precisa ter todas as informações abaixo para estar correto
+		/*
+		 *  Vamos precisar corrigir a linha abaixo porque, se for sábado, vai dar problema, 
+		 *  e o problema está no método estático LocalDate.now(), que é ruim para os testes automatizados
+		 */
+//		Assert.assertEquals(LocalDate.now().plusDays(1), pagamento.getVencimento());
 		Assert.assertEquals(LocalDate.now().plusDays(1), pagamento.getVencimento());
+		
 		Assert.assertEquals(vencedor.getValor(), pagamento.getValor());
 		Assert.assertFalse(pagamento.getPago());
 		Assert.assertEquals(vencedor.getUsuario(), pagamento.getUsuario());
